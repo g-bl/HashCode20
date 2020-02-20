@@ -9,15 +9,23 @@ using System.Threading.Tasks;
 namespace HashCode20
 {
     // MODEL
-    public class RENAME_ME_CLASS
+    public class Book
     {
-        public string VALUE_A;
-        public bool VALUE_B;
+        public int Id;
+        public int Score;
+    }
 
-        public override string ToString()
-        {
-            return VALUE_A;
-        }
+    public class Library
+    {
+        // Input-values
+        public int Id;
+        public int N;
+        public int T;
+        public int M;
+        public List<int> BookIndexes;
+
+        // Solver-values
+        public List<int> SentBooksIndexes;
     }
 
     // SOLVER
@@ -28,7 +36,12 @@ namespace HashCode20
         {
             // Model initializations
 
-            List<RENAME_ME_CLASS> theList = new List<RENAME_ME_CLASS>();
+            int B = 0; // nb of different books
+            int L = 0; // nb of libraries
+            int D = 0; // nb of days
+
+            List<Book> books = new List<Book>();
+            List<Library> libraries = new List<Library>();
 
             /**************************************************************************************
              *  Input loading
@@ -39,28 +52,61 @@ namespace HashCode20
             string inputFilePath = Path.Combine(Directory.GetCurrentDirectory(), inputFileName);
             string[] lines = File.ReadAllLines(inputFilePath);
 
-            int RENAME_ME_COUNT = int.Parse(lines[0]);
+            // Metadata parsing
+            string[] line0 = lines[0].Split(delimiter);
+            B = int.Parse(line0[0]);
+            L = int.Parse(line0[1]);
+            D = int.Parse(line0[2]);
 
-            //Content
-            for (int i = 0; i < RENAME_ME_COUNT; i++)
+            // Books parsing
+            string[] line1 = lines[1].Split(delimiter);
+            for (int i = 0; i < B; i++)
             {
-                string[] splittedLine = lines[i + 1].Split(delimiter);
+                books.Add(new Book()
+                {
+                    Id = i,
+                    Score = int.Parse(line1[i])
+                });
+            }
 
-                RENAME_ME_CLASS theObject = new RENAME_ME_CLASS();
+            // Libraries parsing
+            for(int i = 2; i < (2*L + 2); i+=2)
+            {
+                string[] lineA = lines[i].Split(delimiter);
+                string[] lineB = lines[i+1].Split(delimiter);
 
-                theObject.VALUE_A = i.ToString();
-                theObject.VALUE_B = splittedLine[0] == "Y"; // Change this!
+                int N = int.Parse(lineA[0]);
+                int T = int.Parse(lineA[1]);
+                int M = int.Parse(lineA[2]);
 
-                theList.Add(theObject);
+                List<int> bIndexes = new List<int>();
+                for (int j = 0; j < N; j++)
+                {
+                    bIndexes.Add(int.Parse(lineB[j]));
+                }
+
+                libraries.Add(new Library()
+                {
+                    Id = (i-2)/2,
+                    N = N,
+                    T = T,
+                    M = M,
+                    BookIndexes = bIndexes
+                });
             }
 
             /**************************************************************************************
              *  Solver
              **************************************************************************************/
 
-            Console.WriteLine("Solving...");
+            libraries[1].SentBooksIndexes = new List<int>() { 5, 2, 3 };
+            libraries[0].SentBooksIndexes = new List<int>() { 0, 1, 2, 3, 4 };
 
-            List<RENAME_ME_CLASS> newList = theList;
+            List<Library> signedUpLibraries = new List<Library>()
+            {
+                libraries[1],
+                libraries[0]
+            };
 
             /**************************************************************************************
              *  Output
@@ -70,15 +116,16 @@ namespace HashCode20
 
             using (StreamWriter outputFile = new StreamWriter(Path.Combine(Directory.GetCurrentDirectory(), outputFileName)))
             {
-                outputFile.WriteLine(newList.Count);
+                outputFile.WriteLine(signedUpLibraries.Count);
 
-                foreach (RENAME_ME_CLASS listElement in newList)
+                foreach (Library l in signedUpLibraries)
                 {
-                    outputFile.WriteLine(listElement.ToString());
+                    outputFile.WriteLine(l.Id + " " + l.SentBooksIndexes.Count);
+                    outputFile.WriteLine(String.Join(' ', l.SentBooksIndexes));
                 }
             }
 
-            Console.WriteLine("Done. :" + newList.Count);
+            Console.WriteLine("Done...");
             Console.WriteLine(Path.Combine(Directory.GetCurrentDirectory(), outputFileName));
         }
     }
